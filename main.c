@@ -6,29 +6,11 @@
 /****************************************************/
 
 #include "globals.h"
-
-/* set NO_PARSE to TRUE to get a scanner-only compiler */
-#define NO_PARSE TRUE
-/* set NO_ANALYZE to TRUE to get a parser-only compiler */
-#define NO_ANALYZE TRUE
-
-/* set NO_CODE to TRUE to get a compiler that does not
- * generate code
- */
-#define NO_CODE TRUE
-
 #include "util.h"
-//#if NO_PARSE
 #include "scan.h"
-//#else
 #include "parse.h"
-//#if !NO_ANALYZE
 #include "analyze.h"
-//#if !NO_CODE
 #include "cgen.h"
-//#endif
-//#endif
-//#endif
 
 /* allocate global variables */
 int lineno = 0;
@@ -62,15 +44,13 @@ main( int argc, char * argv[] )
   }
   listing = stdout; /* send listing to screen */
   fprintf(listing,"\nTINY COMPILATION: %s\n",pgm);
-#if NO_PARSE
-  while (getToken()!=ENDFILE);
-#else
+
   syntaxTree = parse();
   if (TraceParse) {
     fprintf(listing,"\nSyntax tree:\n");
     printTree(syntaxTree);
   }
-#if !NO_ANALYZE
+
   if (! Error)
   { if (TraceAnalyze) fprintf(listing,"\nBuilding Symbol Table...\n");
     buildSymtab(syntaxTree);
@@ -78,7 +58,7 @@ main( int argc, char * argv[] )
     typeCheck(syntaxTree);
     if (TraceAnalyze) fprintf(listing,"\nType Checking Finished\n");
   }
-#if !NO_CODE
+
   if (! Error)
   { char * codefile;
     int fnlen = strcspn(pgm,".");
@@ -93,9 +73,7 @@ main( int argc, char * argv[] )
     codeGen(syntaxTree,codefile);
     fclose(code);
   }
-#endif
-#endif
-#endif
+
   fclose(source);
   return 0;
 }
